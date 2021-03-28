@@ -23,21 +23,23 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CERULEAN])
 
 classes = pd.read_csv("data_clean/ClassStats.csv")
 users = pd.read_csv("data_clean/User.csv")
+documents = pd.read_csv("data_clean/Document.csv")
 notifications = pd.read_csv("data_clean/Notification.csv")
+events = pd.read_csv("data_clean/Event.csv")
 
 region_options = []
 for region in sorted(list(classes.libelle_region.unique())):
     region_options.append({'label': str(region),'value': region})
 
 app.layout = html.Div(children=[
-    html.Img(src="https://www.relations-publiques.pro/wp-content/uploads/2021/01/20210112103656-p1-document-bpmt.png", alt="Feamzy logo",
-            style={'maxWidth': '10%', 'maxHeight': '10%', 'marginLeft': 20, 'marginTop': 20, 'display':'block', 'textAlign': 'center'}),
-    html.H1(['Dashboard'], style={'textAlign': 'center'}),
+    html.Div(html.Img(src="https://www.relations-publiques.pro/wp-content/uploads/2021/01/20210112103656-p1-document-bpmt.png", alt="Feamzy logo",
+            style={'maxWidth': '15%', 'maxHeight': '15%', 'marginLeft': 20, 'marginTop': 20}), style={'textAlign': 'center'}),
+    html.H1(['Dashboard'], style={'color': '#4e98f5','textAlign': 'center'}),
     html.Br(),
     html.H2('Users', style={'marginLeft': 10}),
     dbc.Row([dbc.Col(html.Div(children=[users.id.count()], style={'marginTop': 25, 'fontSize': 50,'color': '#4e98f5','textAlign': 'center'}),width=3),
         dcc.Graph(id='users-evolution')
-        ], style={'height': 250, 'marginLeft': 10},align="end"),
+        ], style={'height': 250, 'marginLeft': 10}, align="end"),
     dbc.Row(
         [dbc.Col(html.Div(children=["Users"], style={'marginBottom': 25,'textAlign': 'center'}),width=3),
          dbc.Col(dcc.DatePickerRange(id="selected-dates",calendar_orientation='horizontal',day_size=20,end_date_placeholder_text="End date",with_portal=False,
@@ -50,26 +52,39 @@ app.layout = html.Div(children=[
     html.Br(),
     html.H2('Classes',style={'marginLeft': 10}),
     dbc.Row(
-        [dbc.Col(html.Div(children=["Number of Schools"], style={'marginBottom': 25, 'textAlign': 'center'}),width=4),
-         dbc.Col(html.Div(children=["Average Children per Class"], style={'marginBottom': 25, 'textAlign': 'center'}),width=4),
+        [dbc.Col(html.Div(children=["Number of Schools"], style={'marginBottom': 25, 'textAlign': 'center'}),width=3),
+         dbc.Col(html.Div(children=["Average Children per Class"], style={'marginBottom': 25, 'textAlign': 'center'}),width=3),
          ], style={'height': 10, 'marginLeft': 10}, align="end"),
     dbc.Row(
         [dbc.Col(html.Div(children=[classes.id.nunique()],
-                 style={'marginTop': 25, 'fontSize': 50,'color': '#4e98f5','textAlign': 'center'}),width=4),
+                 style={'marginTop': 25, 'fontSize': 50,'color': '#4e98f5','textAlign': 'center'}),width=3),
         dbc.Col(html.Div(children=[(classes["nbChild"].sum()/classes.shape[0]).round(2)],
-                 style={'marginTop': 25, 'fontSize': 50, 'color': '#4e98f5','textAlign': 'center'}),width=4),
+                 style={'marginTop': 25, 'fontSize': 50, 'color': '#4e98f5','textAlign': 'center'}),width=3),
         dcc.Graph(id='public-prive')
         ],style={'height': 250,'marginLeft': 10},align="start"),
     dcc.Dropdown(id='regions_picker', options=region_options, value=sorted(list(classes.libelle_region.unique())), multi=True, style={'marginLeft': 20,'marginRight': 50}),
     dcc.Graph(id="classes_map"),
     html.Br(),
+    html.H2('Documents',style={'marginLeft': 10}),
+    dbc.Row(
+        [dbc.Col(html.Div(children=["Number of Documents"], style={'marginBottom': 25, 'textAlign': 'center'}), width=3),
+         dbc.Col(html.Div(),width=6),
+         ], style={'height': 10, 'marginLeft': 10}, align="end"),
+    dbc.Row(
+        [dbc.Col(html.Div(children=[documents.id.nunique()], style={'marginTop': 25, 'fontSize': 50,'color': '#4e98f5','textAlign': 'center'}),width=3),
+         dbc.Col(html.Div(dcc.Graph(id='documents_type')),width=6),
+         ], style={'height': 250, 'marginLeft': 10}, align="start"),
+    html.Br(),
+    html.H2('Events', style={'marginLeft': 10}),
+    html.Div(dcc.Graph(id='events-dayofweek')),
+    html.Div(),
     html.Br(),
     html.H2('Notifications',style={'marginLeft': 10}),
     html.Div(dcc.Graph(id='words-wordcloud')),
     html.Div(dcc.DatePickerRange(id="selected-dates-wordcloud",calendar_orientation='horizontal',day_size=20,end_date_placeholder_text="End date",with_portal=False,
                              first_day_of_week=0,reopen_calendar_on_clear=True,is_RTL=False,clearable=True,number_of_months_shown=3,min_date_allowed=dt(2020,1,1),
                              max_date_allowed=pd.to_datetime("today").date(),initial_visible_month=dt(2021,1,1),
-                             start_date=dt(2021,1,1).date(), end_date=pd.to_datetime("today").date(),display_format="DD-MMMM-YYYY",minimum_nights=7,
+                             start_date=dt(2020,5,1).date(), end_date=pd.to_datetime("today").date(),display_format="DD-MMMM-YYYY",minimum_nights=7,
                              persistence=True,persisted_props=["start_date"],persistence_type="session",updatemode="singledate"
                              )),
     html.Br(),
@@ -98,7 +113,7 @@ def users_evolution(start_date,  end_date):
     fig.update_layout(
         margin={"r": 0, "t": 40, "l": 0, "b": 0},
         title_text='Users evolution',
-        width=500, height=200
+        width=500, height=250
         )
 
     return fig
@@ -112,8 +127,8 @@ def pie_public_prive(selected_regions):
 
     fig.update_layout(
         margin={"r": 0, "t": 40, "l": 0, "b": 0},
-        title_text='Public & Private Schools',
-        width=800, height=250
+        title_text='Public & Private Schools', title_x=0.5, #title_y=0.9,
+        width=400, height=250
         )
 
     return fig
@@ -130,7 +145,7 @@ def update_map(selected_regions):
 
     classes_filtered = classes[classes.libelle_region.isin(selected_regions)]
 
-    fig = go.Figure(px.scatter_mapbox(classes_filtered, lat="coordinatesLat", lon="coordinatesLong", text="appellation_officielle",
+    fig = go.Figure(px.scatter_mapbox(classes_filtered, lat="coordinatesLat", lon="coordinatesLong", text="appellation_officielle", color='secteur_public_prive_libe',
                     size="nbChild", color_continuous_scale="Viridis", range_color=(0, 12)))
 
     fig.update_layout(
@@ -146,6 +161,37 @@ def update_map(selected_regions):
                                    'below': "True",
                                }]
                                ))
+    return fig
+
+@app.callback(Output('events-dayofweek', 'figure'),[Input('regions_picker', 'value')])
+def events_dayofweek(selected_regions):
+    df = pd.DataFrame(events.dayOfWeek.value_counts()).reset_index()
+    df.rename(columns={'index': 'Day of the Week', 'dayOfWeek': 'Number of Events'}, inplace=True)
+    days_dict = {"MONDAY": 1, "TUESDAY": 2, "WEDNESDAY": 3, "THURSDAY": 4, "FRIDAY": 5, "SATURDAY": 6, "SUNDAY": 7}
+    df["day_number"] = df['Day of the Week'].apply(lambda x: days_dict[x])
+    df = df.set_index('day_number').sort_index()
+    fig = px.bar(df, x='Day of the Week', y='Number of Events')
+
+    fig.update_layout(
+        margin={"r": 0, "t": 40, "l": 0, "b": 0},
+        title_text='Events per Day of the Week', title_x=0.5, #title_y=0.9,
+        width=400, height=200
+        )
+
+    return fig
+
+@app.callback(Output('documents_type', 'figure'),[Input('regions_picker', 'value')])
+def doc_type(selected_regions):
+    df = pd.DataFrame(documents.type.value_counts()).reset_index()
+    df.rename(columns={'index': "Type", "type": "Number"}, inplace=True)
+    fig = px.bar(df, x=df.Number, y=df.Type)
+
+    fig.update_layout(
+        margin={"r": 0, "t": 40, "l": 0, "b": 0},
+        title_text='Documents Type', title_x=0.5, #title_y=0.9,
+        width=400, height=200
+        )
+
     return fig
 
 @app.callback(Output('words-wordcloud', 'figure'),
@@ -175,7 +221,7 @@ def wordcloud_function(start_date,end_date):
 
     source = source.loc[(source.creationDate>=start_date)&(source.creationDate<=end_date)]
     source.reset_index(inplace=True, drop=True)
-    
+
     text = " ".join([source.message[i] for i in range(0, source.shape[0]) if pd.notna(source.message[i])])
 
     stopwords = ["a", "abord", "absolument", "afin", "ah", "ai", "aie", "aient", "aies", "ailleurs", "ainsi", "ait","allaient", "allo", "allons", "allô", "alors", "anterieur", "anterieure", "anterieures", "apres",
@@ -236,7 +282,8 @@ def wordcloud_function(start_date,end_date):
                       textfont={'size': weights,
                                 'color': colors})
     layout = go.Layout({'xaxis': {'showgrid': False, 'showticklabels': False, 'zeroline': False},
-                        'yaxis': {'showgrid': False, 'showticklabels': False, 'zeroline': False}})
+                        'yaxis': {'showgrid': False, 'showticklabels': False, 'zeroline': False},
+                        'margin': {"r": 0, "t": 30, "l": 0, "b": 0}})
     fig = go.Figure(data=[data], layout=layout)
 
     return fig
