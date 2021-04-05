@@ -95,6 +95,7 @@ last_update = max(users.creationDate.max(), classes.creationDate.max(), homework
 
 # Creating the application
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CERULEAN])
+server = app.server
 
 # Setting up the authentification
 auth = dash_auth.BasicAuth(app, [['Username','Password'],['feamzy_adm', 'ironhack']])
