@@ -126,11 +126,28 @@ card_users_evolution = dbc.Card([
              dcc.DatePickerRange(id="selected-dates-users", calendar_orientation='horizontal', day_size=20,
                                          end_date_placeholder_text="End date", with_portal=False, first_day_of_week=0, reopen_calendar_on_clear=True, is_RTL=False,
                                          clearable=True, number_of_months_shown=3, min_date_allowed=dt(2020, 1, 1),max_date_allowed=pd.to_datetime("today").date(),
-                                         initial_visible_month=dt(2021, 1, 1), start_date=dt(2021, 1, 1).date(), end_date=pd.to_datetime("today").date(),
+                                         initial_visible_month=dt(2021, 1, 1), start_date=dt(2020, 8, 1).date(), end_date=pd.to_datetime("today").date(),
                                          display_format="DD-MMMM-YYYY", minimum_nights=6,
                                          persistence=True, persisted_props=["start_date"], persistence_type="session",
                                          updatemode="singledate"
                                          )
+         ]
+     )
+ ],color='#4e99f6',inverse=True,style={"border": "none"})
+
+card_users_inactive = dbc.Card([
+     dbc.CardBody(
+         [
+             dash_table.DataTable(id='inactive-users',
+                                  style_cell={"TextAlign": "left", },
+                                  style_header={'backgroundColor': '#4e99f6', 'color': 'white', 'fontWeight': 'bold',
+                                                'border': '1px solid black'},
+                                  style_data_conditional=[
+                                      {'if': {'row_index': 'odd'}, 'backgroundColor': 'rgb(248,248,248)'}], page_size=5,
+                                  style_table={'width': '100px', 'height': '200px', },
+                                  style_as_list_view=True,
+                                  export_format="csv",
+                                  )
          ]
      )
  ],color='#4e99f6',inverse=True,style={"border": "none"})
@@ -211,6 +228,7 @@ card_homeworks_visualisations_2 = dbc.Card([dbc.CardBody([
                          style_data_conditional=[{'if':{'row_index':'odd'},  'backgroundColor':'rgb(248,248,248)'}], page_size=5,
                          style_table={'width':'600px','height':'200px',},
                          style_as_list_view=True,
+                         export_format="csv",
                          )
             ]
     )],color='#F8F4F4',style={"border": "none"})
@@ -244,7 +262,7 @@ card_events_given_period_1 = dbc.Card([
      dbc.CardBody([
             dbc.Row([
                      dbc.Col([html.H4(id='events-in-this-period',style={'marginTop': 70, 'fontSize': 50, 'color': '#4e99f6','textAlign': 'center'}),
-                               html.H6(children=["Events in this period"],style={'marginBottom': 70, 'textAlign': 'center', 'color': 'grey'})],align="end")
+                               html.H6(children=["Events in this period (of selected types)"],style={'marginBottom': 70, 'textAlign': 'center', 'color': 'grey'})],align="end")
                     ], align="center"),
             ])
     ],inverse=True, outline=False,style={"border": "none"})
@@ -271,6 +289,7 @@ app.layout = html.Div(children=[
         html.Br(),
         html.H2('USERS', style={'color':'white','marginLeft': 20, 'textShadow': '2px 2px black'}),#,'bgcolor':'#800000'style={'backgroundColor':'blue'}
         dbc.Row([dbc.Col(card_users_key_metrics,width=5), dbc.Col(card_users_evolution, width=7)]),
+        #dbc.Row([dbc.Col(card_users_inactive)]),
         html.Br(),
         ],   style={'backgroundColor':'#4e99f6'}),
     html.Br(),
@@ -362,7 +381,9 @@ app.layout = html.Div(children=[
                 style_data_conditional=[{'if':{'row_index':'odd'},  'backgroundColor':'rgb(248,248,248)'}],
                 page_size=15,
                 style_table={'width':'400px','height':'500px',},
-                style_as_list_view=True,),width=4)]),
+                style_as_list_view=True,
+                export_format="csv",
+            ),width=4)]),
     html.Div(),
     html.Br(),
     html.H2('NOTIFICATIONS',style={'marginLeft': 10,'color': '#4e99f6', 'textShadow': '2px 2px black'}),
@@ -407,8 +428,7 @@ def users_evolution(start_date, end_date):
     fig.add_trace(go.Scatter(x=dff.index, y=dff['Evolution'], name="Cumulated New Users in chosen period", marker=dict(color="#7039bd")), secondary_y=True)
 
     fig.layout.paper_bgcolor = 'rgba(0,0,0,0)'
-    #fig.layout.plot_bgcolor = 'rgba(0,0,0,0)'
-    #fig.update_yaxes(overlaying=True)
+
     fig.update_layout(
                         margin={"r": 0, "t": 40, "l": 0, "b": 0},
                         title_text='User Acquisition', title_font={'color': '#FFF'}, font_color='white',
@@ -434,7 +454,7 @@ def classes_number(start_date, end_date):
 def children_number(start_date, end_date):
     df = users.groupChildSize.value_counts().reset_index()
     df.rename(columns={'index': 'Number of Children', 'groupChildSize': "Number of Users"}, inplace=True)
-    fig = px.bar(df, df["Number of Children"], df["Number of Users"], color_discrete_sequence=['#2dd36f','#4e99f6'],log_y=True)
+    fig = px.bar(df, df["Number of Children"], df["Number of Users"], color_discrete_sequence=['#2dd36f','#4e99f6'], log_y=True, hover_name=df["Number of Users"])
 
     fig.layout.paper_bgcolor = 'rgba(0,0,0,0)'
     fig.layout.plot_bgcolor = 'rgba(0,0,0,0)'
@@ -445,6 +465,34 @@ def children_number(start_date, end_date):
         )
 
     return fig
+
+
+# Try out to identify users without any activity, but it didn't work very well:
+
+# @app.callback([Output('inactive-users', 'data'),Output('inactive-users', 'columns')],
+#               [Input('selected-dates-users', 'start_date'),Input('selected-dates-users', 'end_date')])
+# def users_without_activities(start_date, end_date):
+#
+#     df = users.copy()
+#     df = dataset_with_correct_dates(df, "creationDate", start_date, end_date)
+#
+#     df = df[['id', 'username', 'firstName', 'lastName', 'nbPhoneNumbers', 'nbEmails', 'city', 'groupChildSize',
+#              'creationDate', 'lastModificationDate']]
+#
+#     df_homeworks = dataset_with_correct_dates(homeworks, "creationDate", dt(2020, 1, 1).date(), end_date)
+#     df_events = dataset_with_correct_dates(events, "creationDate", start_date, end_date)
+#     df_documents = dataset_with_correct_dates(documents, "creationDate", start_date, end_date)
+#
+#     #active_users = list(set(list(df_homeworks.userId.unique()) + list(df_events.author.unique())))
+#     active_users = list(set(list(df_homeworks.userId.unique())+list(df_events.author.unique())+list(df_documents.userId.unique())))
+#
+#     df = df[~df.id.isin(active_users)]
+#
+#     data_columns = [{"name": i, "id": i} for i in df.columns]
+#     data = df.to_dict('records')
+#
+#     return data, data_columns
+
 
 @app.callback(Output('public-prive', 'figure'),[Input('regions_picker', 'value')])
 def pie_public_prive(selected_regions):
@@ -512,8 +560,6 @@ def update_map(selected_regions):
 @app.callback([Output('homeworks-authors', 'data'),Output('homeworks-authors', 'columns')],[Input('selected-dates-events', 'start_date'),Input('selected-dates-events', 'end_date')])
 def homeworks_authors(start_date, end_date):
     df = homeworks[["id", "userId", "creationDate"]].copy()
-
-    #df = dataset_with_correct_dates(homeworks[["id","author","creationDate"]].copy(), "creationDate", start_date, end_date)
 
     homeworks_authors = df.groupby("userId").count()["id"].sort_values(ascending=False).reset_index().rename(columns={"userId": "Author", "id": "Homeworks Created"})
     homeworks_authors["Rank"] = homeworks_authors["Homeworks Created"].rank(ascending=False)
@@ -604,7 +650,7 @@ def events_slots(events_types):
     return fig
 
 @app.callback([Output(component_id='events-in-this-period', component_property='children')],
-              [Input('events-types-key-metrics', 'value'),Input('selected-dates-events', 'start_date'),Input('selected-dates-events', 'end_date')])
+              [Input('events-types', 'value'),Input('selected-dates-events', 'start_date'),Input('selected-dates-events', 'end_date')])
 def events_in_this_period(events_types, start_date, end_date):
     if events_types == []:
         return dash.no_update
