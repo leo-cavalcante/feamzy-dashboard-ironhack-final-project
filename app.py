@@ -89,9 +89,17 @@ notifications_group = []
 for notif in sorted(list(notifications.Group.fillna("NOT ASSIGNED").unique())):
     notifications_group.append({'label': str(notif),'value': notif})
 
+# Determining the recency of the databases
+last_update = max(users.creationDate.max(), classes.creationDate.max(), homeworks.creationDate.max(),
+                  documents.creationDate.max(), notifications.creationDate.max(), events.creationDate.max())
+
+# Creating the application
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CERULEAN])
+
+# Setting up the authentification
 auth = dash_auth.BasicAuth(app, [['Username','Password'],['feamzy_adm', 'ironhack']])
 
+# Creating cards that will compose grids in the layout of the application
 card_users_key_metrics = dbc.Card([
      dbc.CardBody(
          [
@@ -159,7 +167,6 @@ card_classes_key_metrics_2 = dbc.Card([
 card_classes_key_metrics_3 = dbc.Card([
      dbc.CardBody(
          [
-
              dbc.Row([dbc.CardImg(src="https://img.icons8.com/clouds/2x/child-safe-zone.png", alt="Kids icon", className='align-self-center', style={'maxWidth': '25%', 'maxHeight': '25%'}),
                       dbc.Col([html.H4(children=[(classes["nbChild"].sum())], style={'marginTop': 25, 'fontSize': 50, 'color': '#4e99f6','textAlign': 'center'}),
                                 html.H6(children=["Children assigned to Classes"], style={'marginBottom': 25, 'color': 'grey', 'textAlign': 'center'})]),
@@ -254,11 +261,11 @@ card_events_key_metrics_filter = dbc.Card([
          ])
  ],inverse=True, outline=False,style={'width':'50%'})#style={'boxShadow':'4px 4px lightgrey'})
 
-
-# Creating layout for app, with content, format and style
+# Creating layout for the app with content, format and style
 app.layout = html.Div(children=[
     dbc.Row([dbc.Col(html.Img(src="/static/feamzy-logo-bluebcg.png", alt="Feamzy logo", style={'maxWidth': '50%', 'maxHeight': '50%'}),width=4,align="center"),
-            dbc.Col(html.H1(['Dashboard'], style={'color': 'white', 'offset':4,'marginLeft': 150, 'textShadow': '2px 2px black'}),width=8),
+            dbc.Col(html.H1(['Dashboard'], style={'color': 'white', 'offset':3,'marginLeft': 150, 'textShadow': '2px 2px black'}),width=4),
+            dbc.Col(html.H6(['Last update: ',last_update], style={'color': 'white', 'offset':4,'marginLeft': 150, 'textShadow': '2px 2px black'}),width=4,align="center"),
             ], style={'backgroundColor':'#4e99f6','position':'sticky', 'top':'0','zIndex': 10, 'border':'1px grey solid','height': '60px'}),
     html.Div([
         html.Br(),
@@ -446,7 +453,9 @@ def pie_public_prive(selected_regions):
     df.secteur_public_prive_libe.value_counts()
 
     fig = go.Figure(data=[go.Pie(labels=df.secteur_public_prive_libe.value_counts().index,
-                                 values=df.secteur_public_prive_libe.value_counts().values,insidetextfont={'color':'white'},hole=.4)])
+                                 values=df.secteur_public_prive_libe.value_counts().values,
+                                 #color_discrete_map={'Public': '#4e99f6', 'Privé': '#2dd36f'},
+                                 insidetextfont={'color':'white'}, hole=.4,)])
                                  #textfont={'color':'#FFF'},outsidetextfont={'color':'#FFF'},insidetextfont={'color':'#FFF'})])
     fig.layout.paper_bgcolor = 'rgba(0,0,0,0)'
     #fig.layout.legend.font.color = 'white'
@@ -480,7 +489,8 @@ def update_map(selected_regions):
     classes_filtered.rename(columns={"appellation_officielle":"Nom de l'Ecole","secteur_public_prive_libe":"Secteur","nbChild":"Children assigned","nbArchivedChildren":"Children archived"}, inplace=True)
 
     fig = go.Figure(px.scatter_mapbox(classes_filtered, lat="coordinatesLat", lon="coordinatesLong", size="Children assigned", color='Secteur',
-                                       color_discrete_sequence=['#2dd36f','#4e99f6'], hover_name="Nom de l'Ecole", hover_data=["Children archived","Children assigned"]))
+                                      color_discrete_map={'Public':'#4e99f6', 'Privé':'#2dd36f'},
+                                      hover_name="Nom de l'Ecole", hover_data=["Children archived","Children assigned"]))
     fig.layout.paper_bgcolor = 'rgba(0,0,0,0)'
     fig.layout.plot_bgcolor = 'rgba(0,0,0,0)'
     fig.update_layout(
@@ -551,8 +561,7 @@ def doc_type(selected_regions):
                       margin={"r": 0, "t": 40, "l": 0, "b": 0},
                       title_text='Documents Types', title_x=0.5,  # title_y=0.9,
                       width=350, height=350, title_font={'color': 'black'},
-                      font_color='black',
-                      )
+                      font_color='black')
 
     return fig
 
@@ -588,7 +597,7 @@ def events_slots(events_types):
 
     fig.update_layout(showlegend=True,
         margin={"r": 0, "t": 40, "l": 0, "b": 0},
-        title_text='Number of Slots chosen by all Events Created', title_font={'color': 'grey'}, font_color='grey',
+        title_text='Number of Slots chosen in all Events Created', title_font={'color': 'grey'}, font_color='grey',
         width=500, height=250, xaxis={'showgrid': False}, yaxis={'showgrid': False}
         )
 
@@ -724,11 +733,13 @@ def treemap_notifications(notifications_group, start_date, end_date):
     df = df.reset_index().rename(columns={'id': 'Number'})
     df["Notifications"] = "NOTIFICATIONS"
 
-    fig = px.treemap(df, path=['Notifications', 'Group', 'notificationType'], values=df["Number"],
-                     color_discrete_sequence=["#2dd36f", "#4e99f6", "#7039bd", "#f8e71c"])
+    fig = px.treemap(df, path=['Notifications', 'Group', 'notificationType'], values=df["Number"], color=df["Group"],
+                     color_discrete_map={"(?)":"#d3d3d3", "SETUP": "#4e99f6", "EVENT":"#2dd36f", "HOMEWORK" : "#7039bd", "CLASSES" : "#f8e71c"},
+                     hover_name=df["Number"])
+
+    fig.data[0].textinfo = 'label+text+value+percent parent+percent root'
 
     return fig
-
 
 @app.callback(Output('notifications-wordcloud', 'figure'),
                  [Input('selected-dates-notifications', 'start_date'),Input('selected-dates-notifications', 'end_date')])
