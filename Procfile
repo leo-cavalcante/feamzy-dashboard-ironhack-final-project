@@ -1,1 +1,1 @@
-web: gunicorn feamzy-dashboard:server
+web: gunicorn feamzy_dashboard:server
