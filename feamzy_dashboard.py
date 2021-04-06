@@ -5,7 +5,6 @@ import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
 import dash_table
 import dash_auth
-#from time import sleep
 
 import plotly
 import plotly.express as px
@@ -13,7 +12,6 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 import pandas as pd
-import numpy as np
 
 from urllib.request import urlopen
 import json
