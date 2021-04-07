@@ -278,6 +278,7 @@ card_events_key_metrics_filter = dbc.Card([
          ])
  ],inverse=True, outline=False,style={'width':'50%'})#style={'boxShadow':'4px 4px lightgrey'})
 
+
 # Creating layout for the app with content, format and style
 app.layout = html.Div(children=[
     dbc.Row([dbc.Col(html.Img(src="/static/feamzy-logo-bluebcg.png", alt="Feamzy logo", style={'maxWidth': '50%', 'maxHeight': '50%'}),width=4,align="center"),
@@ -286,9 +287,8 @@ app.layout = html.Div(children=[
             ], style={'backgroundColor':'#4e99f6','position':'sticky', 'top':'0','zIndex': 10, 'border':'1px grey solid','height': '60px'}),
     html.Div([
         html.Br(),
-        html.H2('USERS', style={'color':'white','marginLeft': 20, 'textShadow': '2px 2px black'}),#,'bgcolor':'#800000'style={'backgroundColor':'blue'}
+        html.H2('USERS', style={'color':'white','marginLeft': 20, 'textShadow': '2px 2px black'}),
         dbc.Row([dbc.Col(card_users_key_metrics,width=5), dbc.Col(card_users_evolution, width=7)]),
-        #dbc.Row([dbc.Col(card_users_inactive)]),
         html.Br(),
         ],   style={'backgroundColor':'#4e99f6'}),
     html.Br(),
@@ -302,7 +302,7 @@ app.layout = html.Div(children=[
         dbc.Row([dbc.Col(card_classes_map, width=9),
                  dbc.Col(card_classes_pie_chart,width=3)],align='center'),
         ],   style={'marginLeft': 10,'marginRight': 10, 'backgroundColor':'white'}),
-        dbc.Row([dcc.Dropdown(id='regions_picker', options=region_options, value=sorted(list(classes.libelle_region.unique())), multi=True,)# style={'marginLeft': 40,'marginRight': 40})
+        dbc.Row([dcc.Dropdown(id='regions_picker', options=region_options, value=sorted(list(classes.libelle_region.unique())), multi=True,)
                 ],align='center', style={'marginLeft': 40,'marginRight': 40}),
     html.Br(),
     html.Br(),
@@ -406,6 +406,7 @@ app.layout = html.Div(children=[
     html.Div(),
 ])
 
+
 # Creating the interactive parts of the app (graphs visualisations and filters mainly)
 
 @app.callback(Output('users-evolution', 'figure'),[Input('selected-dates-users', 'start_date'),Input('selected-dates-users', 'end_date')])
@@ -501,18 +502,16 @@ def pie_public_prive(selected_regions):
 
     fig = go.Figure(data=[go.Pie(labels=df.secteur_public_prive_libe.value_counts().index,
                                  values=df.secteur_public_prive_libe.value_counts().values,
-                                 #color_discrete_map={'Public': '#4e99f6', 'Privé': '#2dd36f'},
                                  insidetextfont={'color':'white'}, hole=.4,)])
-                                 #textfont={'color':'#FFF'},outsidetextfont={'color':'#FFF'},insidetextfont={'color':'#FFF'})])
+
     fig.layout.paper_bgcolor = 'rgba(0,0,0,0)'
-    #fig.layout.legend.font.color = 'white'
 
     colors = ['#4e99f6','#2dd36f']
     fig.update_traces(hoverinfo='label+percent', textinfo='value', marker=dict(colors=colors))
 
     fig.update_layout(showlegend=False,
         margin={"r": 0, "t": 40, "l": 0, "b": 0},
-        title_text='Public & Private Schools', title_x=0.5, #title_y=0.9,
+        title_text='Public & Private Schools', title_x=0.5,
         width=250, height=250, title_font = {'color': 'black'},
         font_color='black',
         )
@@ -529,7 +528,7 @@ def update_map(selected_regions):
         france = json.load(response)
 
     classes_filtered = classes[classes.libelle_region.isin(selected_regions)]
-    df1 = classes_filtered.groupby("schoolid").sum().drop(columns=["code_postal_uai","coordinatesLat","coordinatesLong"]) #"Unnamed: 0",
+    df1 = classes_filtered.groupby("schoolid").sum().drop(columns=["code_postal_uai","coordinatesLat","coordinatesLong"])
     df2 = classes[["schoolid","secteur_public_prive_libe","appellation_officielle","libelle_commune","localite_acheminement_uai","libelle_departement","libelle_region","code_postal_uai","geometry_type","coordinatesLat","coordinatesLong"]]
 
     classes_filtered = pd.merge(df1, df2, on="schoolid")
@@ -595,9 +594,7 @@ def doc_type(selected_regions):
     fig = go.Figure(data=[go.Pie(labels=df["Type"],
                                  values=df["Number"],
                                  insidetextfont={'color': 'white'},hole=.4)])
-    # textfont={'color':'#FFF'},outsidetextfont={'color':'#FFF'},insidetextfont={'color':'#FFF'})])
     fig.layout.paper_bgcolor = 'rgba(0,0,0,0)'
-    # fig.layout.legend.font.color = 'white'
 
     colors = ['#4e99f6', '#2dd36f']
     fig.update_traces(hoverinfo='label+percent', textinfo='value', marker=dict(colors=colors))
@@ -827,7 +824,6 @@ def wordcloud_notifications(start_date,end_date):
         i += 1
 
     colors = [plotly.colors.DEFAULT_PLOTLY_COLORS[random.randrange(1, 10)] for i in range(40)]
-    # weights = [random.randint(15, 35) for i in range(40)]
     weights = [45 - i for i in range(40)]
 
     data = go.Scatter(x=[random.random() for i in range(40)],

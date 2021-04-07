@@ -105,3 +105,5 @@ def clean_all_databases():
         os.chdir("../data")
 
     return None
+
+clean_all_databases()
