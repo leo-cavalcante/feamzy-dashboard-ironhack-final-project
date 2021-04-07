@@ -1,4 +1,5 @@
 # Databases (confidentiality of company's data)
+*.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
