@@ -4,7 +4,7 @@
 <br />
 
 ### Link for the presentation
-[Feamzy Dashboard - Presentation Finale pour Ironhack](https://docs.google.com/presentation/d/1moxKOG9S2QKj9dSF_KMBL5XLXZLok555vwe5zfLfFSI/edit?usp=sharing)
+[Feamzy Dashboard - Ironhack Final Presentation](https://docs.google.com/presentation/d/1moxKOG9S2QKj9dSF_KMBL5XLXZLok555vwe5zfLfFSI/edit?usp=sharing)
 
 <br />
 
