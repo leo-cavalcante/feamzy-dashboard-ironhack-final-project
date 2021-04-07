@@ -30,6 +30,8 @@ I have learned the necessary informations via [Charming Data YouTube channel](ht
 8. `Procfile`: document necessary for the deployment in **Heroku**.
 9. `Jupyter Notebooks`: they were used for tests of each function in the app, but it is not formalized and they therefore don't present a pleasant reading. These files are named `Data Cleaning`, `Data Exploration` and `Data Manipulation & Visualisations.ipynb`.
 
+<em>Note: For confidentiality reasons, the databases are ignored in this Git Repository. </em>
+
 <br />
 
 ## Before running the application:
