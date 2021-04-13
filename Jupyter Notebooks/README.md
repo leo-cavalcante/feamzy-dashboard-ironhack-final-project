@@ -12,4 +12,4 @@ These notebooks come together to define and implement the functions that would b
 
 Since their utility was focused in testing and implementing functions, and not to formalize a procedure, **their readability is very low**.
 
-Nevertheless, they are here presented here only to attest my efforts in implementing the functions in the `.py` files in the repository root.
+Nevertheless, they are presented here only to attest my efforts in implementing the functions in the `.py` files in the repository root.
