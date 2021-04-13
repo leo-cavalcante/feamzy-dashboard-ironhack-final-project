@@ -8,6 +8,9 @@
 <br />
 
 ### Explanation
+
+<br />
+
 These notebooks come together to define and implement the functions that would be adopted in the dashboard app.
 
 Since their utility was focused in testing and implementing functions, and not to formalize a procedure, **their readability is very low**.

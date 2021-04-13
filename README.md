@@ -8,6 +8,10 @@
 
 <br />
 
+<div style="text-align:center"><a href="https://docs.google.com/presentation/d/1moxKOG9S2QKj9dSF_KMBL5XLXZLok555vwe5zfLfFSI/edit?usp=sharing"><img src="Feamzy Dashboard Cover.png" alt="Feamzy Dashboard Cover" height="300"/></a></div>
+
+<br />
+
 ## Description
 
 **Dashboard** developed to report informations from [Feamzy](https://www.feamzy.com/) app.
